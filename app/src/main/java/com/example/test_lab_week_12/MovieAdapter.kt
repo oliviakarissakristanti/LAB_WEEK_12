@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.test_lab_week_12.model.Movie
 
-class MovieAdapter(private val clickListener: MovieClickListener) :
+class MovieAdapter(private val clickListener: (Movie) -> Unit) :
     RecyclerView.Adapter<MovieAdapter.MovieViewHolder>() {
 
     private val movies = mutableListOf<Movie>()
@@ -25,12 +25,18 @@ class MovieAdapter(private val clickListener: MovieClickListener) :
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
         val movie = movies[position]
         holder.bind(movie)
-        holder.itemView.setOnClickListener { clickListener.onMovieClick(movie) }
+        holder.itemView.setOnClickListener { clickListener(movie) }
     }
 
     fun addMovies(movieList: List<Movie>) {
+        val insertIndex = movies.size
         movies.addAll(movieList)
-        notifyItemRangeInserted(0, movieList.size)
+        notifyItemRangeInserted(insertIndex, movieList.size)
+    }
+
+    fun clear() {
+        movies.clear()
+        notifyDataSetChanged()
     }
 
     class MovieViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -43,17 +49,13 @@ class MovieAdapter(private val clickListener: MovieClickListener) :
         }
 
         fun bind(movie: Movie) {
-            titleText.text = movie.title
+            titleText.text = movie.title ?: "Untitled"
 
             Glide.with(itemView.context)
-                .load("$imageUrl${movie.posterPath}")
+                .load("${imageUrl}${movie.posterPath}")
                 .placeholder(R.mipmap.ic_launcher)
                 .fitCenter()
                 .into(poster)
         }
-    }
-
-    interface MovieClickListener {
-        fun onMovieClick(movie: Movie)
     }
 }

@@ -4,6 +4,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class PopularMoviesResponse(
-    val page: Int,
-    val results: List<Movie>
+    val page: Int = 0,
+    val results: List<Movie> = emptyList()
 )
