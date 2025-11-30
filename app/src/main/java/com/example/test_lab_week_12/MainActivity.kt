@@ -12,7 +12,7 @@ import com.example.test_lab_week_12.model.Movie
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MovieAdapter.MovieClickListener {
 
     private lateinit var movieAdapter: MovieAdapter
 
@@ -20,19 +20,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        movieAdapter = MovieAdapter { movie ->
-            // start details
-            val intent = Intent(this, DetailsActivity::class.java)
-            intent.putExtra("movie", movie)
-            startActivity(intent)
-        }
-
+        movieAdapter = MovieAdapter(this)
         val recyclerView: RecyclerView = findViewById(R.id.movie_list)
         recyclerView.adapter = movieAdapter
 
         val movieRepository = (application as MovieApplication).movieRepository
 
-        val movieViewModel = ViewModelProvider(
+        val viewModel = ViewModelProvider(
             this,
             object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -43,21 +37,27 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+
                 launch {
-                    movieViewModel.popularMovies.collect { movies ->
-                        movieAdapter.clear()
-                        movieAdapter.addMovies(movies)
+                    viewModel.popularMovies.collect { list ->
+                        movieAdapter.addMovies(list)
                     }
                 }
 
                 launch {
-                    movieViewModel.error.collect { errorMsg ->
-                        if (errorMsg.isNotEmpty()) {
-                            Snackbar.make(recyclerView, errorMsg, Snackbar.LENGTH_LONG).show()
+                    viewModel.error.collect { msg ->
+                        if (msg.isNotEmpty()) {
+                            Snackbar.make(recyclerView, msg, Snackbar.LENGTH_LONG).show()
                         }
                     }
                 }
             }
         }
+    }
+
+    override fun onMovieClick(movie: Movie) {
+        val intent = Intent(this, DetailsActivity::class.java)
+        intent.putExtra("movie", movie)
+        startActivity(intent)
     }
 }

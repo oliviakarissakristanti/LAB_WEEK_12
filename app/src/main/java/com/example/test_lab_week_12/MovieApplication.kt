@@ -8,7 +8,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 class MovieApplication : Application() {
 
     lateinit var movieRepository: MovieRepository
-        private set
 
     override fun onCreate() {
         super.onCreate()
@@ -19,7 +18,6 @@ class MovieApplication : Application() {
             .build()
 
         val movieService = retrofit.create(MovieService::class.java)
-
         movieRepository = MovieRepository(movieService)
     }
 }
